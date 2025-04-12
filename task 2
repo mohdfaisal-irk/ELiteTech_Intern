@@ -1,0 +1,42 @@
+# Step 1: Import necessary libraries
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Step 2: Load dataset
+iris = load_iris()
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+y = pd.Series(iris.target)
+
+# Step 3: Feature Selection using ANOVA F-test
+selector = SelectKBest(score_func=f_classif, k=3)
+X_new = selector.fit_transform(X, y)
+selected_features = X.columns[selector.get_support()]
+print("Selected Features:", list(selected_features))
+
+# Step 4: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=42)
+
+# Step 5: Train the model
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# Step 6: Make predictions
+y_pred = model.predict(X_test)
+
+# Step 7: Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Step 8: Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+sns.heatmap(conf_matrix, annot=True, cmap='Blues', fmt='g', xticklabels=iris.target_names, yticklabels=iris.target_names)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
